@@ -58,7 +58,7 @@ export default {
     // 某週所有人的作業
     if (url.pathname === "/api/submissions" && request.method === "GET") {
       const week = parseInt(url.searchParams.get("week"), 10);
-      if (!(week >= 1 && week <= 11)) return json({ error: "週次錯誤" }, 400);
+      if (!((week >= 1 && week <= 11) || (week >= 101 && week <= 111))) return json({ error: "週次錯誤" }, 400);  // 101–111＝會後會分享
       const { results } = await env.DB.prepare(
         `SELECT name, answers, updated_at FROM ${T_SUB} WHERE week = ? ORDER BY updated_at`
       ).bind(week).all();
@@ -76,7 +76,7 @@ export default {
       const week = parseInt(b.week, 10);
       const name = String(b.name || "").trim();
       const answers = Array.isArray(b.answers) ? b.answers.map(a => String(a).slice(0, 3000)) : [];
-      if (!(week >= 1 && week <= 11)) return json({ error: "週次錯誤" }, 400);
+      if (!((week >= 1 && week <= 11) || (week >= 101 && week <= 111))) return json({ error: "週次錯誤" }, 400);  // 101–111＝會後會分享
       if (!name || name.length > 20) return json({ error: "請選擇名字" }, 400);
       if (!answers.length || answers.some(a => !a.trim())) return json({ error: "每一題都要填喔" }, 400);
       const now = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 19); // 台灣時間

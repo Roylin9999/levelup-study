@@ -82,13 +82,18 @@ td:first-child,th:first-child{width:3em;text-align:right;color:var(--ink2)}
         <button class="btn small" id="reload">重新整理</button>
       </div>
     </div>
-    <div class="tabs"><button class="tab on" data-v="lists">📝 名單庫</button><button class="tab" data-v="hw">✍️ 作業</button></div>
+    <div class="tabs"><button class="tab on" data-v="lists">📝 名單庫</button><button class="tab" data-v="hw">✍️ 作業</button><button class="tab" data-v="share">💬 會後會</button></div>
     <div class="card" id="vLists"><div id="people"></div></div>
     <div class="card" id="vHw" hidden>
       <div class="weeks" id="hwWeeks"></div>
       <div class="hwhead"><b id="hwTitle"></b><button class="btn small" id="hwCopy">複製這週全部作業</button></div>
       <div id="hwList"></div>
       <div class="missing" id="hwMissing"></div>
+    </div>
+    <div class="card" id="vShare" hidden>
+      <div class="weeks" id="shWeeks"></div>
+      <div class="hwhead"><b id="shTitle"></b><button class="btn small" id="shCopy">複製這週全部分享</button></div>
+      <div id="shList"></div>
     </div>
   </div>
 </div>
@@ -110,7 +115,7 @@ const qOf = w => WEEK_QUESTIONS[w] || (data.subs.find(x=>x.week===w)?.answers ||
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ss = { get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}, set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}} };
-let data = null;
+let data = null, WEEK_DATES_PRE;
 
 async function load(code){
   $("#msg").textContent = "";
@@ -119,14 +124,14 @@ async function load(code){
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || "讀取失敗");
     data = j; ss.set("lu_admin", code);
-    $("#login").hidden = true; $("#main").hidden = false; render(); renderHw();
+    $("#login").hidden = true; $("#main").hidden = false; render(); renderHw(); renderShare();
   }catch(e){ $("#login").hidden = false; $("#main").hidden = true; $("#msg").textContent = "❌ " + e.message; }
 }
 
 function render(){
   const q = $("#q").value.trim().toLowerCase();
   const byName = Object.fromEntries(data.lists.map(l=>[l.name,l]));
-  const hw = {}; data.subs.forEach(s=>{ hw[s.name] = (hw[s.name]||0) + 1; });
+  const hw = {}; data.subs.forEach(s=>{ if (s.week<=11) hw[s.name] = (hw[s.name]||0) + 1; });
   const names = [...MEMBERS, ...data.lists.map(l=>l.name).filter(n=>!MEMBERS.includes(n))];
   const rows = names.map(n=>{ const l = byName[n]; return {n, l, c: l ? l.count : 0}; })
     .sort((a,b)=>b.c-a.c || names.indexOf(a.n)-names.indexOf(b.n));
@@ -152,6 +157,25 @@ function render(){
     </details>`;
   }).join("") : `<p class="empty">找不到符合的結果</p>`;
 }
+
+/* ---- 會後會分享（資料週次 = 101–111） ---- */
+let shWeek = 1;
+WEEK_DATES_PRE = ["2026-11-25","2026-12-02","2026-12-09","2026-12-16","2026-12-23","2026-12-30","2027-01-06","2027-01-13","2027-01-20","2027-01-27","2027-02-03"];
+WEEK_DATES_PRE.forEach((d,i)=>{ if (d <= new Date(Date.now()+8*3600e3).toISOString().slice(0,10)) shWeek = i+1; });
+function renderShare(){
+  $("#shWeeks").innerHTML = WEEK_LABELS.map((l,i)=>{ const n = data.subs.filter(s=>s.week===i+101).length;
+    return `<button class="wk ${i+1===shWeek?"on":""}" data-w="${i+1}">${l}・${n}</button>`; }).join("");
+  const list = data.subs.filter(s=>s.week===shWeek+100).sort((a,b)=>MEMBERS.indexOf(a.name)-MEMBERS.indexOf(b.name));
+  $("#shTitle").textContent = `${WEEK_LABELS[shWeek-1]} 會後會分享 ${list.length} 則`;
+  $("#shList").innerHTML = list.length ? list.map(s=>`<div class="ans"><div class="who">${esc(s.name)}<time>${esc((s.updated_at||"").slice(5,16).replace("T"," "))}</time></div><div class="a">${esc(s.answers[0]||"")}</div></div>`).join("") : `<p class="empty">這週還沒有人分享</p>`;
+}
+$("#shWeeks").onclick = e=>{ const b = e.target.closest("[data-w]"); if (!b) return; shWeek = +b.dataset.w; renderShare(); };
+$("#shCopy").onclick = async ()=>{
+  const list = data.subs.filter(s=>s.week===shWeek+100).sort((a,b)=>MEMBERS.indexOf(a.name)-MEMBERS.indexOf(b.name));
+  const txt = `【${WEEK_LABELS[shWeek-1]} 會後會分享】\n\n` + list.map(s=>`▍${s.name}\n${s.answers[0]||""}`).join("\n\n");
+  try{ await navigator.clipboard.writeText(txt); $("#shCopy").textContent = "已複製 ✓"; }catch(err){ $("#shCopy").textContent = "複製失敗"; }
+  setTimeout(()=>{ $("#shCopy").textContent = "複製這週全部分享"; }, 1500);
+};
 
 /* ---- 作業 ---- */
 const todayTPE = new Date(Date.now()+8*3600e3).toISOString().slice(0,10);
@@ -182,7 +206,7 @@ $("#hwCopy").onclick = async ()=>{
 };
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));
-  $("#vLists").hidden = t.dataset.v!=="lists"; $("#vHw").hidden = t.dataset.v!=="hw";
+  $("#vLists").hidden = t.dataset.v!=="lists"; $("#vHw").hidden = t.dataset.v!=="hw"; $("#vShare").hidden = t.dataset.v!=="share";
   document.querySelector(".tools").style.display = t.dataset.v==="lists" ? "" : "none";
 });
 

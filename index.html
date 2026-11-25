@@ -282,6 +282,17 @@ footer{color:#8A6A4A}
     <div class="subs" id="subs"><p class="empty">載入中…</p></div>
   </div>
 
+  <div class="card" id="shareCard">
+    <h2>💬 會後會分享 <span class="tag" id="shareTag"></span></h2>
+    <label for="swho">我是誰</label>
+    <select id="swho"></select>
+    <label for="stext">今晚會後會，我想分享…</label>
+    <textarea id="stext" placeholder="收穫、心得、想鼓勵夥伴的話都可以"></textarea>
+    <button class="btn" id="ssend" type="button">送出分享</button>
+    <div class="msg" id="smsg"></div>
+    <div class="subs" id="shares" style="margin-top:14px"></div>
+  </div>
+
   <div class="card">
     <h2>🏆 繳交進度</h2>
     <div class="grid" id="grid"></div>
@@ -474,6 +485,7 @@ async function api(method,url,body){
     }catch(e){ if (e.server) throw e; }
     DEMO = demoData.slice(); $("#demo").hidden = false;
   }
+  if (GROUP) url = url.replace(`/api/${GROUP}/`, "/api/");
   if (method==="POST" && url==="/api/submissions"){
     DEMO = DEMO.filter(s=>!(s.week===body.week&&s.name===body.name));
     DEMO.push({week:body.week,name:body.name,answers:body.answers,updated_at:new Date(Date.now()+8*3600e3).toISOString().slice(0,16)});
@@ -547,7 +559,40 @@ async function loadBars(){
   el.addEventListener("click",()=>{ const now=Date.now(); n = now-t<600 ? n+1 : 1; t=now;
     if (n>=3){ n=0; location.href="/admin"; } }); }
 
-function refresh(){ renderWeeks(); renderKP(); renderForm(); loadSubs(); }
+/* ---- 會後會分享（每週都有；資料存成第 100+週） ---- */
+let shares = [];
+$("#swho").innerHTML = $("#who").innerHTML; $("#swho").value = store.get("lu_name") || "";
+$("#swho").onchange = ()=>{ store.set("lu_name",$("#swho").value); fillShare(); };
+function fillShare(){
+  const mine = shares.find(x=>x.name===$("#swho").value);
+  $("#stext").value = mine ? (mine.answers[0]||"") : "";
+  $("#ssend").textContent = mine ? "更新我的分享" : "送出分享";
+}
+function renderShares(){
+  $("#shareTag").textContent = `${WEEKS[cur].label}・${shares.length} 則`;
+  const order = n => { const i = MEMBERS.indexOf(n); return i<0?999:i; };
+  $("#shares").innerHTML = shares.length ? [...shares].sort((a,b)=>order(a.name)-order(b.name)).map(x=>`
+    <div class="sub"><div class="who">${esc(x.name)}<time>${esc((x.updated_at||"").slice(5,16).replace("T"," "))}</time></div>
+    <div class="a">${esc(x.answers[0]||"")}</div></div>`).join("") : `<p class="empty">還沒有人分享，會後會見！</p>`;
+}
+async function loadShares(){
+  try{ shares = (await api("GET",`/api/submissions?week=${cur+101}`)).items || []; }catch(e){ shares = []; }
+  renderShares(); fillShare();
+}
+$("#ssend").onclick = async ()=>{
+  const name = $("#swho").value, text = $("#stext").value.trim();
+  const m = $("#smsg");
+  if (!name){ m.textContent="請先選擇你的名字"; m.className="msg err"; return; }
+  if (!text){ m.textContent="請寫下你的分享"; m.className="msg err"; return; }
+  $("#ssend").disabled = true;
+  try{
+    await api("POST","/api/submissions",{week:cur+101,name,answers:[text],code:$("#code").value.trim()});
+    await loadShares(); m.textContent="✅ 已送出！"; m.className="msg ok";
+  }catch(e){ m.textContent="❌ "+e.message; m.className="msg err"; }
+  $("#ssend").disabled = false;
+};
+
+function refresh(){ renderWeeks(); renderKP(); renderForm(); loadSubs(); $("#smsg").textContent=""; loadShares(); }
 refresh(); loadGrid();
 </script>
 </body>
