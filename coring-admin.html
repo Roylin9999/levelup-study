@@ -41,12 +41,27 @@ td:first-child,th:first-child{width:3em;text-align:right;color:var(--ink2)}
 .empty{color:var(--ink2);padding:8px 12px 12px;font-size:.9rem}
 .zero{opacity:.6}
 .act{display:flex;justify-content:flex-end;padding:8px 12px;background:#fff;border-top:1px dashed var(--line)}
+.tabs{display:flex;gap:8px;margin-top:16px}
+.tab{flex:1;font:inherit;font-weight:700;padding:9px;border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);box-shadow:0 4px 0 var(--ink);cursor:pointer}
+.tab.on{background:var(--orange);color:#fff}
+.weeks{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px}
+.wk{flex:0 0 auto;font:inherit;font-size:.88rem;padding:5px 12px;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);cursor:pointer}
+.wk.on{background:var(--green);color:#fff}
+.hwhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0}
+.hwhead b{font-size:1.05rem}
+.ans{border:2px solid var(--ink);border-radius:16px;background:#FFF9E3;padding:10px 12px;margin-top:10px}
+.ans .who{display:flex;justify-content:space-between;font-weight:700;color:var(--orange)}
+.ans .who time{color:var(--ink2);font-weight:400;font-size:.8rem}
+.ans .q{color:var(--ink2);font-size:.8rem;margin-top:6px}
+.ans .a{white-space:pre-wrap;word-break:break-word}
+.missing{margin-top:12px;font-size:.9rem;color:var(--ink2)}
+.missing span{display:inline-block;border:1.5px dashed var(--ink2);border-radius:99px;padding:1px 10px;margin:3px 3px 0 0}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Coring <span>Leader</span> 後台</h1>
-  <p class="sub">夥伴的 30 名單庫與作業繳交狀況（只有 Leader 能看）</p>
+  <p class="sub">夥伴的 30 名單庫與每週作業（只有 Leader 能看）</p>
 
   <div class="card" id="login">
     <label for="code">後台密碼</label>
@@ -67,7 +82,14 @@ td:first-child,th:first-child{width:3em;text-align:right;color:var(--ink2)}
         <button class="btn small" id="reload">重新整理</button>
       </div>
     </div>
-    <div class="card"><div id="people"></div></div>
+    <div class="tabs"><button class="tab on" data-v="lists">📝 名單庫</button><button class="tab" data-v="hw">✍️ 作業</button></div>
+    <div class="card" id="vLists"><div id="people"></div></div>
+    <div class="card" id="vHw" hidden>
+      <div class="weeks" id="hwWeeks"></div>
+      <div class="hwhead"><b id="hwTitle"></b><button class="btn small" id="hwCopy">複製這週全部作業</button></div>
+      <div id="hwList"></div>
+      <div class="missing" id="hwMissing"></div>
+    </div>
   </div>
 </div>
 
@@ -77,6 +99,10 @@ td:first-child,th:first-child{width:3em;text-align:right;color:var(--ink2)}
 const GROUP = "coring";  // 對應 _worker.js 的 GROUPS
 const MEMBERS = ["可威","劭旻","Bianca","佩🐷","惠英","Lesley","nono","Dwi（印尼夥伴）","迦迦","圓圓","姜姜","Candice","Ygrek","Patty","Annie","Jasmine","Jia Sheng","Valerie","Peter","阿威","寶石","詠純","Jimmy","瑋瑋","魚魚","蕭蕭","君曄","小美"];
 const LIST_N = 30;
+// 作業週次（第 1 週＝準備週沒有作業）與題目
+const WEEK_LABELS = ["準備週","第一週","第二週","第三週","第四週","第五週","第六週","第七週","第八週","第九週","成功慶賀"];
+const HW_WEEKS = [2,3,4,5,6,7,8,9,10,11];
+const QUESTIONS = ["這堂課我最有收穫的 1 個重點是什麼？","這一週我要做的 1 個行動是什麼？"];
 /* ==================================================== */
 
 const $ = s => document.querySelector(s);
@@ -91,7 +117,7 @@ async function load(code){
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || "讀取失敗");
     data = j; ss.set("lu_admin", code);
-    $("#login").hidden = true; $("#main").hidden = false; render();
+    $("#login").hidden = true; $("#main").hidden = false; render(); renderHw();
   }catch(e){ $("#login").hidden = false; $("#main").hidden = true; $("#msg").textContent = "❌ " + e.message; }
 }
 
@@ -124,6 +150,39 @@ function render(){
     </details>`;
   }).join("") : `<p class="empty">找不到符合的結果</p>`;
 }
+
+/* ---- 作業 ---- */
+const todayTPE = new Date(Date.now()+8*3600e3).toISOString().slice(0,10);
+const WEEK_DATES = ["2026-11-25","2026-12-02","2026-12-09","2026-12-16","2026-12-23","2026-12-30","2027-01-06","2027-01-13","2027-01-20","2027-01-27","2027-02-03"];
+let hwWeek = HW_WEEKS[0];
+HW_WEEKS.forEach(w=>{ if (WEEK_DATES[w-1] <= todayTPE) hwWeek = w; });
+function renderHw(){
+  $("#hwWeeks").innerHTML = HW_WEEKS.map(w=>{
+    const n = data.subs.filter(s=>s.week===w).length;
+    return `<button class="wk ${w===hwWeek?"on":""}" data-w="${w}">${WEEK_LABELS[w-1]}・${n}</button>`; }).join("");
+  const list = data.subs.filter(s=>s.week===hwWeek)
+    .sort((a,b)=>MEMBERS.indexOf(a.name)-MEMBERS.indexOf(b.name));
+  $("#hwTitle").textContent = `${WEEK_LABELS[hwWeek-1]}（${WEEK_DATES[hwWeek-1].slice(5).replace("-","/")}）已交 ${list.length}/${MEMBERS.length}`;
+  $("#hwList").innerHTML = list.length ? list.map(s=>`<div class="ans">
+      <div class="who">${esc(s.name)}<time>${esc((s.updated_at||"").slice(5,16).replace("T"," "))}</time></div>
+      ${QUESTIONS.map((q,i)=>`<div class="q">${esc(q)}</div><div class="a">${esc(s.answers[i]||"")}</div>`).join("")}
+    </div>`).join("") : `<p class="empty">這週還沒有人交作業</p>`;
+  const done = new Set(list.map(s=>s.name));
+  const miss = MEMBERS.filter(n=>!done.has(n));
+  $("#hwMissing").innerHTML = miss.length ? `還沒交（${miss.length}）：` + miss.map(n=>`<span>${esc(n)}</span>`).join("") : "🎉 全員都交了！";
+}
+$("#hwWeeks").onclick = e=>{ const b = e.target.closest("[data-w]"); if (!b) return; hwWeek = +b.dataset.w; renderHw(); };
+$("#hwCopy").onclick = async ()=>{
+  const list = data.subs.filter(s=>s.week===hwWeek).sort((a,b)=>MEMBERS.indexOf(a.name)-MEMBERS.indexOf(b.name));
+  const txt = `【${WEEK_LABELS[hwWeek-1]} 作業】\n\n` + list.map(s=>`▍${s.name}\n` + QUESTIONS.map((q,i)=>`・${q}\n${s.answers[i]||""}`).join("\n")).join("\n\n");
+  try{ await navigator.clipboard.writeText(txt); $("#hwCopy").textContent = "已複製 ✓"; }catch(err){ $("#hwCopy").textContent = "複製失敗"; }
+  setTimeout(()=>{ $("#hwCopy").textContent = "複製這週全部作業"; }, 1500);
+};
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));
+  $("#vLists").hidden = t.dataset.v!=="lists"; $("#vHw").hidden = t.dataset.v!=="hw";
+  document.querySelector(".tools").style.display = t.dataset.v==="lists" ? "" : "none";
+});
 
 $("#people").onclick = async e=>{
   const b = e.target.closest("[data-copy]"); if (!b) return;

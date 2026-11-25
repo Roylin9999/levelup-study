@@ -125,10 +125,10 @@ export default {
       if (!code) return json({ error: `這個群組還沒開放後台（需在 Cloudflare 設定機密 ${key}）` }, 403);
       if ((request.headers.get("X-Admin-Code") || "") !== code) return json({ error: "後台密碼不正確" }, 403);
       const lists = await env.DB.prepare(`SELECT name, items, count, updated_at FROM ${T_LIST}`).all();
-      const subs = await env.DB.prepare(`SELECT week, name FROM ${T_SUB}`).all();
+      const subs = await env.DB.prepare(`SELECT week, name, answers, updated_at FROM ${T_SUB} ORDER BY week, updated_at`).all();
       return json({
         lists: lists.results.map(r => ({ name: r.name, count: r.count, updated_at: r.updated_at, items: JSON.parse(r.items) })),
-        subs: subs.results,
+        subs: subs.results.map(r => ({ week: r.week, name: r.name, updated_at: r.updated_at, answers: JSON.parse(r.answers || "[]") })),
       });
     }
 
