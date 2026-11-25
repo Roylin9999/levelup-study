@@ -156,6 +156,12 @@ th,td{border-bottom:1px dashed #E8D9A8}
 .bar i b{background:#86B544}
 #demo{background:#C9ECF5!important;border-color:#4A2C1A!important}
 footer{color:#8C6B55}
+.tasks{display:grid;gap:8px;margin:4px 0 6px}
+.tasks div{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:8px 12px;background:rgba(255,255,255,.6)}
+.tasks b{font-family:"Baloo 2",sans-serif;font-size:1.3rem;line-height:1.2;color:var(--gold)}
+.tasks strong{display:block}
+.tasks span{font-size:.88rem;color:var(--muted)}
+.tasks strong{color:var(--text);font-size:1rem}
 </style>
 </head>
 <body>
@@ -249,6 +255,7 @@ footer{color:#8C6B55}
 
   <div class="card" id="hwCard">
     <h2>✍️ 小作業 <span class="tag" id="hwTag"></span></h2>
+    <div id="tasks"></div>
     <form id="form">
       <label for="who">我是誰</label>
       <select id="who" required></select>
@@ -292,11 +299,13 @@ const DEFAULT_QUESTIONS = [
 
 // 11 週課程內容：上完課後把 title / points 填進去即可
 // points 留空陣列 [] 時，網頁會顯示「上課後更新」
-// label：週次名稱；speakers：主講嘉賓；questions：（選填）這週專屬作業題目；noHomework:true＝這週沒有作業；namelist:true＝這週填 30 個名單
+// label：週次名稱；speakers：主講嘉賓；tasks：本週作業說明 [標題,說明]；questions：（選填）這週專屬作業題目；noHomework:true＝這週沒有作業；namelist:true＝這週填 30 個名單
 const WEEKS = [
   { date:"2026-11-25", label:"準備週", title:"", points:[],
     speakers:["Marc Ashley｜美安全球集團總裁兼首席運營官","Steve Bosson｜首席發展官","Evelyn Chan｜區域總經理（美安亞洲、台灣及香港）","Celine Leung｜區域業務總監（美安亞洲、台灣及香港）"],
-    noHomework:true, namelist:true },
+    namelist:true,
+    tasks:[["列完 30 個名單","完成三大類名單盤點"],["本週完成 2 個面談","不拘形式但不建議線上，遵循一對一行銷精神"],["上兩個群組分享","無論成績如何，分享行動照片、心得或回饋夥伴"]],
+    questions:["列完 30 個名單：三大類名單盤點完成了嗎？（名單填在上方「我的 30 個名單」）","本週 2 個面談：和誰面談？結果如何？","上兩個群組分享：你分享了什麼？（行動照片、心得或回饋夥伴）"] },
   { date:"2026-12-02", label:"第一週", title:"", points:[], speakers:["蔡昌志 & 林孟涵｜執行副總裁級 EFVP"] },
   { date:"2026-12-09", label:"第二週", title:"", points:[], speakers:["Katherine Yin｜副總裁級 FVP"] },
   { date:"2026-12-16", label:"第三週", title:"", points:[], speakers:["Steven Hu｜高級顧問經理級 DIR","Martin Hui｜總顧問經理級 NSC"] },
@@ -361,6 +370,8 @@ function renderForm(){
   if (nl) loadBars();
   if (off) return;
   $("#hwTag").textContent = `${WEEKS[cur].label}・${md(WEEKS[cur].date)}`;
+  const tk = WEEKS[cur].tasks || [];
+  $("#tasks").innerHTML = tk.length ? `<div class="tasks">${tk.map((t,i)=>`<div><b>${String(i+1).padStart(2,"0")}</b><span><strong>${esc(t[0])}</strong>${esc(t[1]||"")}</span></div>`).join("")}</div>` : "";
   $("#qs").innerHTML = qsOf(cur).map((q,i)=>`
     <label for="q${i}">${i+1}. ${esc(q)}</label>
     <textarea id="q${i}" required></textarea>`).join("");
@@ -404,7 +415,7 @@ async function loadGrid(){
   try{ done = (await api("GET","/api/progress")).items || []; }catch(e){}
   const has = new Set(done.map(d=>d.week+"|"+d.name));
   const hw = WEEKS.map((w,i)=>({w,i})).filter(x=>!x.w.noHomework);
-  const head = `<tr><th>夥伴</th>${hw.map(({i})=>`<th>${i===WEEKS.length-1?"慶":i}</th>`).join("")}<th>合計</th></tr>`;
+  const head = `<tr><th>夥伴</th>${hw.map(({i})=>`<th>${i===0?"準":i===WEEKS.length-1?"慶":i}</th>`).join("")}<th>合計</th></tr>`;
   const rows = MEMBERS.map(n=>{
     let c = 0;
     const cells = hw.map(({i})=>{ const y = has.has((i+1)+"|"+n); if(y)c++; return `<td><span class="dot ${y?"y":""}"></span></td>`; }).join("");

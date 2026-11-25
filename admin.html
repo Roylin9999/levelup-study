@@ -101,10 +101,12 @@ td:first-child,th:first-child{width:3em;text-align:right;color:var(--ink2)}
 const GROUP = "";  // 對應 _worker.js 的 GROUPS
 const MEMBERS = ["忠嶢","晨洸","子筠","Ella","冠文","敏君","玲君","國禎","春惠","妘庭","心茲","提姆"];
 const LIST_N = 30;
-// 作業週次（第 1 週＝準備週沒有作業）與題目
+// 作業週次（第 1 週＝準備週）與題目
 const WEEK_LABELS = ["準備週","第一週","第二週","第三週","第四週","第五週","第六週","第七週","第八週","第九週","成功慶賀"];
-const HW_WEEKS = [2,3,4,5,6,7,8,9,10,11];
+const HW_WEEKS = [1,2,3,4,5,6,7,8,9,10,11];
 const QUESTIONS = ["這堂課我最有收穫的 1 個重點是什麼？","這一週我要做的 1 個行動是什麼？"];
+const WEEK_QUESTIONS = { 1:["列完 30 個名單：三大類名單盤點完成了嗎？（名單填在上方「我的 30 個名單」）","本週 2 個面談：和誰面談？結果如何？","上兩個群組分享：你分享了什麼？（行動照片、心得或回饋夥伴）"] };  // 某週有專屬題目就寫在這裡
+const qOf = w => WEEK_QUESTIONS[w] || QUESTIONS;
 /* ==================================================== */
 
 const $ = s => document.querySelector(s);
@@ -167,7 +169,7 @@ function renderHw(){
   $("#hwTitle").textContent = `${WEEK_LABELS[hwWeek-1]}（${WEEK_DATES[hwWeek-1].slice(5).replace("-","/")}）已交 ${list.length}/${MEMBERS.length}`;
   $("#hwList").innerHTML = list.length ? list.map(s=>`<div class="ans">
       <div class="who">${esc(s.name)}<time>${esc((s.updated_at||"").slice(5,16).replace("T"," "))}</time></div>
-      ${QUESTIONS.map((q,i)=>`<div class="q">${esc(q)}</div><div class="a">${esc(s.answers[i]||"")}</div>`).join("")}
+      ${qOf(hwWeek).map((q,i)=>`<div class="q">${esc(q)}</div><div class="a">${esc(s.answers[i]||"")}</div>`).join("")}
     </div>`).join("") : `<p class="empty">這週還沒有人交作業</p>`;
   const done = new Set(list.map(s=>s.name));
   const miss = MEMBERS.filter(n=>!done.has(n));
@@ -176,7 +178,7 @@ function renderHw(){
 $("#hwWeeks").onclick = e=>{ const b = e.target.closest("[data-w]"); if (!b) return; hwWeek = +b.dataset.w; renderHw(); };
 $("#hwCopy").onclick = async ()=>{
   const list = data.subs.filter(s=>s.week===hwWeek).sort((a,b)=>MEMBERS.indexOf(a.name)-MEMBERS.indexOf(b.name));
-  const txt = `【${WEEK_LABELS[hwWeek-1]} 作業】\n\n` + list.map(s=>`▍${s.name}\n` + QUESTIONS.map((q,i)=>`・${q}\n${s.answers[i]||""}`).join("\n")).join("\n\n");
+  const txt = `【${WEEK_LABELS[hwWeek-1]} 作業】\n\n` + list.map(s=>`▍${s.name}\n` + qOf(hwWeek).map((q,i)=>`・${q}\n${s.answers[i]||""}`).join("\n")).join("\n\n");
   try{ await navigator.clipboard.writeText(txt); $("#hwCopy").textContent = "已複製 ✓"; }catch(err){ $("#hwCopy").textContent = "複製失敗"; }
   setTimeout(()=>{ $("#hwCopy").textContent = "複製這週全部作業"; }, 1500);
 };
