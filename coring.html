@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LEVEL UP Coring 學習站</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Chiron+GoRound+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#040a22; --card:rgba(10,22,60,.82); --line:rgba(232,192,110,.35); --text:#f3f6ff; --muted:#9fb0d6;
@@ -110,6 +110,52 @@ th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:
 .bar em{font-style:normal;text-align:right;color:var(--gold2);font-weight:700}
 .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
 footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:30px}
+
+/* ===== 達爾文配色（覆蓋上面的深藍金色） ===== */
+:root{
+  --bg:#FFF3C9; --card:#FFFFFF; --line:#4A2C1A; --text:#4A2C1A; --muted:#8C6B55;
+  --gold:#F47A1F; --gold2:#4A2C1A; --blue:#86B544; --ok:#86B544;
+  --green:#86B544; --green-soft:#E4F2C6; --orange-soft:#FFDDB8; --pink:#F59C96; --pink-soft:#FFE4E0; --sky:#C9ECF5;
+}
+body{font-family:"Chiron GoRound TC","Noto Sans TC",system-ui,sans-serif;background:#FFF3C9;
+  background-image:radial-gradient(circle at 10% 8%,#FFDDB8 0 90px,transparent 91px),radial-gradient(circle at 92% 30%,#C9ECF5 0 70px,transparent 71px),
+  radial-gradient(circle at 6% 70%,#E4F2C6 0 80px,transparent 81px),radial-gradient(circle at 95% 88%,#FFE4E0 0 90px,transparent 91px)}
+.gold,header h1 .lv{background:none;-webkit-background-clip:initial;background-clip:initial;color:#4A2C1A}
+header h1 .lv{color:#F47A1F;font-family:"Baloo 2",sans-serif;font-style:normal}
+header .en{color:#86B544;font-family:"Baloo 2",sans-serif}
+header .tagline span{font-size:1rem;background:#FFDDB8;border:3px solid #4A2C1A;border-radius:999px;padding:2px 16px;display:inline-block;box-shadow:0 4px 0 #4A2C1A}
+header p{color:#8C6B55}
+.card{background:#fff;border:3px solid #4A2C1A;border-radius:26px;box-shadow:0 6px 0 #4A2C1A;backdrop-filter:none}
+h2{color:#4A2C1A}
+h2 .tag{background:#86B544;color:#fff;border:2px solid #4A2C1A}
+details{border-top:2px dashed #E8D9A8}
+summary::after{color:#F47A1F}
+.flow div,.people div,.sub{background:#FFF9E3;border:2px solid #4A2C1A;border-radius:14px}
+.people div{border-left:6px solid #F47A1F}
+.flow em,.big b{color:#F47A1F}
+.pill{border:2px solid #4A2C1A;background:#E4F2C6}
+.steps span::before{background:#86B544;color:#fff}
+.earn td{border-bottom:1px dashed #E8D9A8}
+.earn td:first-child{color:#F47A1F}
+.speakers span{background:#C9ECF5;border:2px solid #4A2C1A}
+.wk{background:#fff;border:2px solid #4A2C1A;color:#4A2C1A;box-shadow:0 3px 0 #4A2C1A}
+.wk small{color:#8C6B55}
+.wk.on{background:#F47A1F;color:#fff;border-color:#4A2C1A}
+.wk.on small{color:#FFF3C9}
+select,textarea,input{background:#FFFDF4;color:#4A2C1A;border:2px solid #4A2C1A}
+select:focus,textarea:focus,input:focus{outline:3px solid #86B544}
+.btn{background:#86B544;color:#fff;border:3px solid #4A2C1A;border-radius:999px;box-shadow:0 5px 0 #4A2C1A}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #4A2C1A}
+.msg.ok{color:#5E8E25} .msg.err{color:#D9480F}
+.sub .who{color:#F47A1F}
+th:first-child,td:first-child{background:#fff}
+th,td{border-bottom:1px dashed #E8D9A8}
+.dot{background:#F1E6C4}.dot.y{background:#86B544}
+.count,.bar em{color:#F47A1F}
+.bar i{background:#F1E6C4;border:1.5px solid #4A2C1A}
+.bar i b{background:#86B544}
+#demo{background:#C9ECF5!important;border-color:#4A2C1A!important}
+footer{color:#8C6B55}
 </style>
 </head>
 <body>
