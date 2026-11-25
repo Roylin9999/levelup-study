@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LEVEL UP 學習站</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="icon" href="img/soda-wave.png">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Chiron+GoRound+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#040a22; --card:rgba(10,22,60,.82); --line:rgba(232,192,110,.35); --text:#f3f6ff; --muted:#9fb0d6;
@@ -110,12 +111,62 @@ th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:
 .bar em{font-style:normal;text-align:right;color:var(--gold2);font-weight:700}
 .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
 footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:30px}
+
+/* ===== 蘇打餅配色（覆蓋上面的深藍金色） ===== */
+:root{
+  --bg:#FFF4D6; --card:#FFFFFF; --line:#5A3A1E; --text:#5A3A1E; --muted:#8A6A4A;
+  --gold:#E8961E; --gold2:#5A3A1E; --blue:#7FAE4C; --ok:#7FAE4C;
+}
+body{font-family:"Chiron GoRound TC","Noto Sans TC",system-ui,sans-serif;background:#FFF4D6;
+  background-image:radial-gradient(circle at 8% 10%,#FFE3A8 0 90px,transparent 91px),radial-gradient(circle at 94% 32%,#E8F3D6 0 80px,transparent 81px),
+  radial-gradient(circle at 5% 72%,#E4F0CF 0 80px,transparent 81px),radial-gradient(circle at 96% 90%,#FFE6DF 0 90px,transparent 91px)}
+.gold,header h1 .lv{background:none;-webkit-background-clip:initial;background-clip:initial;color:#5A3A1E}
+header h1 .lv{color:#E8961E;font-family:"Baloo 2",sans-serif;font-style:normal}
+header .en{color:#7FAE4C;font-family:"Baloo 2",sans-serif}
+header .tagline span{font-size:1rem;background:#FFE3A8;border:3px solid #5A3A1E;border-radius:999px;padding:2px 16px;display:inline-block;box-shadow:0 4px 0 #5A3A1E}
+header p{color:#8A6A4A}
+header .mascot{width:130px;display:block;margin:0 auto -6px;filter:drop-shadow(0 4px 0 rgba(90,58,30,.15))}
+.card{position:relative;background:#fff;border:3px solid #5A3A1E;border-radius:26px;box-shadow:0 6px 0 #5A3A1E;backdrop-filter:none}
+.card .pet{position:absolute;right:8px;top:-40px;width:78px;pointer-events:none}
+h2{color:#5A3A1E}
+h2 .tag{background:#7FAE4C;color:#fff;border:2px solid #5A3A1E}
+details{border-top:2px dashed #EADBB0}
+summary::after{color:#E8961E}
+.flow div,.people div,.sub{background:#FFFAEB;border:2px solid #5A3A1E;border-radius:14px}
+.people div{border-left:6px solid #D9A55B}
+.flow em,.big b{color:#E8961E}
+.pill{border:2px solid #5A3A1E;background:#E4F0CF}
+.steps span::before{background:#7FAE4C;color:#fff}
+.earn td{border-bottom:1px dashed #EADBB0}
+.earn td:first-child{color:#B9773A}
+.speakers span{background:#E8F3D6;border:2px solid #5A3A1E}
+.wk{background:#fff;border:2px solid #5A3A1E;color:#5A3A1E;box-shadow:0 3px 0 #5A3A1E}
+.wk small{color:#8A6A4A}
+.wk.on{background:#E8961E;color:#fff;border-color:#5A3A1E}
+.wk.on small{color:#FFF4D6}
+select,textarea,input{background:#FFFDF5;color:#5A3A1E;border:2px solid #5A3A1E}
+select:focus,textarea:focus,input:focus{outline:3px solid #7FAE4C}
+.btn{background:#7FAE4C;color:#fff;border:3px solid #5A3A1E;border-radius:999px;box-shadow:0 5px 0 #5A3A1E}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #5A3A1E}
+.msg.ok{color:#5A8A2A} .msg.err{color:#C2410C}
+.sub .who{color:#B9773A}
+th:first-child,td:first-child{background:#fff}
+th,td{border-bottom:1px dashed #EADBB0}
+.dot{background:#F2E6C4}.dot.y{background:#7FAE4C}
+.count,.bar em{color:#E8961E}
+.bar i{background:#F2E6C4;border:1.5px solid #5A3A1E}
+.bar i b{background:linear-gradient(90deg,#7FAE4C,#A5CC6B)}
+.empty img{display:block;width:110px;margin:4px auto 6px}
+.empty.withpet{text-align:center}
+#demo{background:#E8F3D6!important;border-color:#5A3A1E!important}
+footer{color:#8A6A4A}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div id="demo" hidden style="background:rgba(61,123,255,.2);border:1px solid var(--blue);border-radius:10px;padding:6px 12px;font-size:.85rem;text-align:center">👀 預覽模式：還沒接上資料庫，交的作業只會留在這個畫面</div>
   <header>
+    <img class="mascot" src="img/soda-wave.png" alt="蘇打餅">
     <div class="en">ASIA RISES: LEVEL UP TOGETHER</div>
     <h1><span class="gold">全亞洲啟動・一起</span> <span class="lv">LEVEL UP</span></h1>
     <div class="tagline"><span class="gold">打造百萬美金認知培訓｜學習站</span></div>
@@ -180,8 +231,9 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:30px}
   </div>
 
   <div class="card" id="listCard" hidden>
+    <img class="pet" src="img/soda-wow.png" alt="">
     <h2>📝 我的 30 個名單 <span class="tag" id="listTag">0 / 30</span></h2>
-    <p class="note" style="margin:0 0 6px">名單內容只有自己看得到（用個人密碼保護），大家只看得到你寫了幾個。</p>
+    <p class="note" style="margin:0 0 6px">名單內容只有你自己和 Leader 看得到（用個人密碼保護），其他夥伴只看得到你寫了幾個。</p>
     <div class="row2">
       <div><label for="lwho">我是誰</label><select id="lwho"></select></div>
       <div><label for="lpin">個人密碼（4–8 位數字）</label><input id="lpin" type="password" inputmode="numeric" autocomplete="off" placeholder="第一次儲存＝設定密碼"></div>
@@ -197,11 +249,13 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:30px}
   </div>
 
   <div class="card" id="progCard" hidden>
+    <img class="pet" src="img/soda-cheer.png" alt="">
     <h2>🏁 30 名單進度</h2>
     <div id="bars"></div>
   </div>
 
   <div class="card" id="hwCard">
+    <img class="pet" src="img/soda-love.png" alt="">
     <h2>✍️ 小作業 <span class="tag" id="hwTag"></span></h2>
     <form id="form">
       <label for="who">我是誰</label>
@@ -332,7 +386,7 @@ function fillMine(){
 
 function renderSubs(){
   $("#subCount").textContent = `${subs.length} / ${MEMBERS.length}`;
-  if (!subs.length){ $("#subs").innerHTML = `<p class="empty">還沒有人交，當第一個吧！🔥</p>`; return; }
+  if (!subs.length){ $("#subs").innerHTML = `<p class="empty withpet"><img src="img/soda-sleep.png" alt="">還沒有人交，當第一個吧！🔥</p>`; return; }
   const qs = qsOf(cur);
   const order = n => { const i = MEMBERS.indexOf(n); return i<0?999:i; };
   $("#subs").innerHTML = [...subs].sort((a,b)=>order(a.name)-order(b.name)).map(s=>`

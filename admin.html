@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>LEVEL UP Leader 後台</title>
+<link rel="icon" href="img/soda-wave.png">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Chiron+GoRound+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFF4D6;--ink:#5A3A1E;--ink2:#8A6A4A;--green:#7FAE4C;--green-soft:#E4F0CF;--orange:#E8961E;--orange-soft:#FFE3A8;--sky:#E8F3D6;--line:#EADBB0}
+*{box-sizing:border-box;margin:0;padding:0;min-width:0}
+body{font-family:"Chiron GoRound TC","Noto Sans TC",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:1.8rem;font-weight:700;text-align:center}
+h1 span{font-family:"Baloo 2",sans-serif;color:var(--orange)}
+.sub{text-align:center;color:var(--ink2);font-size:.9rem}
+.card{background:#fff;border:3px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink);padding:16px;margin-top:16px}
+label{font-weight:700;display:block;margin-bottom:6px}
+input{width:100%;font:inherit;font-size:1rem;padding:10px 12px;border:2px solid var(--ink);border-radius:12px;background:#FFFDF4;color:var(--ink)}
+.btn{margin-top:12px;width:100%;font:inherit;font-weight:700;font-size:1rem;padding:11px;border:3px solid var(--ink);border-radius:999px;background:var(--green);color:#fff;box-shadow:0 5px 0 var(--ink);cursor:pointer}
+.btn.small{width:auto;margin:0;padding:4px 14px;font-size:.85rem;box-shadow:0 3px 0 var(--ink);background:var(--orange)}
+.msg{margin-top:8px;font-size:.9rem;color:#D9480F;min-height:1.2em}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{background:var(--green-soft);border:2px solid var(--ink);border-radius:16px;padding:10px;text-align:center}
+.stat b{display:block;font-family:"Baloo 2",sans-serif;font-size:1.8rem;line-height:1.1;color:var(--orange)}
+.stat span{font-size:.8rem;color:var(--ink2)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.tools input{flex:1;min-width:160px}
+.person{border:2px solid var(--ink);border-radius:16px;margin-top:10px;background:#FFF9E3;overflow:hidden}
+.person summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,7em) minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px}
+.person summary::-webkit-details-marker{display:none}
+.nm{font-weight:700}
+.bar{height:12px;border:1.5px solid var(--ink);border-radius:99px;background:#F1E6C4;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green)}
+.ct{font-family:"Baloo 2",sans-serif;font-weight:800;color:var(--orange);white-space:nowrap}
+.meta{font-size:.8rem;color:var(--ink2);padding:0 12px 6px}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff}
+th,td{padding:6px 10px;border-top:1px dashed var(--line);text-align:left;vertical-align:top}
+th{background:var(--orange-soft);font-size:.82rem}
+td:first-child,th:first-child{width:3em;text-align:right;color:var(--ink2)}
+.empty{color:var(--ink2);padding:8px 12px 12px;font-size:.9rem}
+.zero{opacity:.6}
+.act{display:flex;justify-content:flex-end;padding:8px 12px;background:#fff;border-top:1px dashed var(--line)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img src="img/soda-cheer.png" alt="蘇打餅" style="width:110px;display:block;margin:0 auto">
+  <h1>LEVEL UP <span>Leader</span> 後台</h1>
+  <p class="sub">夥伴的 30 名單庫與作業繳交狀況（只有 Leader 能看）</p>
+
+  <div class="card" id="login">
+    <label for="code">後台密碼</label>
+    <input id="code" type="password" autocomplete="off">
+    <button class="btn" id="go">進入後台</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div id="main" hidden>
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><b id="sStart">0</b><span>已開始填名單</span></div>
+        <div class="stat"><b id="sFull">0</b><span>已填滿 30 個</span></div>
+        <div class="stat"><b id="sTotal">0</b><span>名單總數</span></div>
+      </div>
+      <div class="tools">
+        <input id="q" placeholder="搜尋夥伴或名單裡的名字">
+        <button class="btn small" id="reload">重新整理</button>
+      </div>
+    </div>
+    <div class="card"><div id="people"></div></div>
+  </div>
+</div>
+
+<script>
+{
+/* ==================== 可編輯設定 ==================== */
+const GROUP = "";  // 對應 _worker.js 的 GROUPS
+const MEMBERS = ["忠嶢","晨洸","子筠","Ella","冠文","敏君","玲君","國禎","春惠","妘庭","心茲","提姆"];
+const LIST_N = 30;
+/* ==================================================== */
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ss = { get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}, set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}} };
+let data = null;
+
+async function load(code){
+  $("#msg").textContent = "";
+  try{
+    const r = await fetch(GROUP?`/api/${GROUP}/admin/lists`:`/api/admin/lists`, {headers:{"X-Admin-Code":code}});
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || "讀取失敗");
+    data = j; ss.set("lu_admin_main", code);
+    $("#login").hidden = true; $("#main").hidden = false; render();
+  }catch(e){ $("#login").hidden = false; $("#main").hidden = true; $("#msg").textContent = "❌ " + e.message; }
+}
+
+function render(){
+  const q = $("#q").value.trim().toLowerCase();
+  const byName = Object.fromEntries(data.lists.map(l=>[l.name,l]));
+  const hw = {}; data.subs.forEach(s=>{ hw[s.name] = (hw[s.name]||0) + 1; });
+  const names = [...MEMBERS, ...data.lists.map(l=>l.name).filter(n=>!MEMBERS.includes(n))];
+  const rows = names.map(n=>{ const l = byName[n]; return {n, l, c: l ? l.count : 0}; })
+    .sort((a,b)=>b.c-a.c || names.indexOf(a.n)-names.indexOf(b.n));
+  $("#sStart").textContent = rows.filter(r=>r.c>0).length + "/" + MEMBERS.length;
+  $("#sFull").textContent = rows.filter(r=>r.c>=LIST_N).length;
+  $("#sTotal").textContent = rows.reduce((a,r)=>a+r.c,0);
+
+  const shown = rows.filter(r=>{
+    if (!q) return true;
+    if (r.n.toLowerCase().includes(q)) return true;
+    return r.l && r.l.items.some(x=>(x[0]+" "+x[1]).toLowerCase().includes(q));
+  });
+  $("#people").innerHTML = shown.length ? shown.map(r=>{
+    const items = r.l ? r.l.items.map((x,i)=>({i:i+1,a:x[0],b:x[1]})).filter(x=>x.a) : [];
+    const open = q && !r.n.toLowerCase().includes(q) ? "open" : "";
+    return `<details class="person ${r.c?"":"zero"}" ${open}>
+      <summary><span class="nm">${esc(r.n)}</span>
+        <span class="bar"><i style="width:${Math.min(r.c,LIST_N)/LIST_N*100}%"></i></span>
+        <span class="ct">${r.c}/${LIST_N}${r.c>=LIST_N?" 🎉":""}</span></summary>
+      <div class="meta">${r.l?`最後更新：${esc((r.l.updated_at||"").replace("T"," ").slice(0,16))}`:"還沒開始填"}｜已交作業 ${hw[r.n]||0} 週</div>
+      ${items.length ? `<table><tr><th>#</th><th>姓名</th><th>關係／備註</th></tr>${items.map(x=>`<tr><td>${x.i}</td><td>${esc(x.a)}</td><td>${esc(x.b)}</td></tr>`).join("")}</table>
+        <div class="act"><button class="btn small" data-copy="${esc(r.n)}">複製這份名單</button></div>` : `<p class="empty">名單是空的</p>`}
+    </details>`;
+  }).join("") : `<p class="empty">找不到符合的結果</p>`;
+}
+
+$("#people").onclick = async e=>{
+  const b = e.target.closest("[data-copy]"); if (!b) return;
+  const l = data.lists.find(x=>x.name===b.dataset.copy); if (!l) return;
+  const txt = `${l.name} 的名單\n` + l.items.map((x,i)=>x[0]?`${i+1}. ${x[0]}${x[1]?"（"+x[1]+"）":""}`:"").filter(Boolean).join("\n");
+  try{ await navigator.clipboard.writeText(txt); b.textContent = "已複製 ✓"; }catch(err){ b.textContent = "複製失敗"; }
+  setTimeout(()=>{ b.textContent = "複製這份名單"; }, 1500);
+};
+$("#go").onclick = ()=>load($("#code").value.trim());
+$("#code").onkeydown = e=>{ if (e.key==="Enter") load($("#code").value.trim()); };
+$("#q").oninput = render;
+$("#reload").onclick = ()=>load(ss.get("lu_admin_main")||"");
+const saved = ss.get("lu_admin_main"); if (saved) load(saved);
+}
+</script>
+</body>
+</html>
