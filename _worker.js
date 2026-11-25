@@ -118,6 +118,20 @@ export default {
       return json({ ok: true, count });
     }
 
+    // ===== Leader 後台：看全部名單（只有設定了 ADMIN_CODE_<群組> 機密的群組才開放）=====
+    if (url.pathname === "/api/admin/lists") {
+      const key = "ADMIN_CODE" + (grp ? "_" + grp.toUpperCase() : "");
+      const code = env[key];
+      if (!code) return json({ error: `這個群組還沒開放後台（需在 Cloudflare 設定機密 ${key}）` }, 403);
+      if ((request.headers.get("X-Admin-Code") || "") !== code) return json({ error: "後台密碼不正確" }, 403);
+      const lists = await env.DB.prepare(`SELECT name, items, count, updated_at FROM ${T_LIST}`).all();
+      const subs = await env.DB.prepare(`SELECT week, name FROM ${T_SUB}`).all();
+      return json({
+        lists: lists.results.map(r => ({ name: r.name, count: r.count, updated_at: r.updated_at, items: JSON.parse(r.items) })),
+        subs: subs.results,
+      });
+    }
+
     // 繳交進度表
     if (url.pathname === "/api/progress") {
       const { results } = await env.DB.prepare(`SELECT week, name FROM ${T_SUB}`).all();
