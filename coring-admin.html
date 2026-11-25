@@ -191,7 +191,7 @@ function renderHw(){
   $("#hwTitle").textContent = `${WEEK_LABELS[hwWeek-1]}（${WEEK_DATES[hwWeek-1].slice(5).replace("-","/")}）已交 ${list.length}/${MEMBERS.length}`;
   $("#hwList").innerHTML = list.length ? list.map(s=>`<div class="ans">
       <div class="who">${esc(s.name)}<time>${esc((s.updated_at||"").slice(5,16).replace("T"," "))}</time></div>
-      ${qOf(hwWeek).map((q,i)=>`<div class="q">${esc(q)}</div><div class="a">${esc(s.answers[i]||"")}</div>`).join("")}
+      ${qOf(hwWeek).map((q,i)=>`<div class="q">${esc(q)}</div><div class="a">${esc(s.answers[i]||"（還沒填）")}</div>`).join("")}
     </div>`).join("") : `<p class="empty">這週還沒有人交作業</p>`;
   const done = new Set(list.map(s=>s.name));
   const miss = MEMBERS.filter(n=>!done.has(n));

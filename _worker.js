@@ -78,7 +78,7 @@ export default {
       const answers = Array.isArray(b.answers) ? b.answers.map(a => String(a).slice(0, 3000)) : [];
       if (!((week >= 1 && week <= 11) || (week >= 101 && week <= 111))) return json({ error: "週次錯誤" }, 400);  // 101–111＝會後會分享
       if (!name || name.length > 20) return json({ error: "請選擇名字" }, 400);
-      if (!answers.length || answers.some(a => !a.trim())) return json({ error: "每一題都要填喔" }, 400);
+      if (!answers.some(a => a.trim())) return json({ error: "至少填一題再送出喔" }, 400);  // 可以先交一部分，之後再更新
       const now = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 19); // 台灣時間
       await env.DB.prepare(
         `INSERT INTO ${T_SUB} (week, name, answers, updated_at) VALUES (?, ?, ?, ?)

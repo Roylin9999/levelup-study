@@ -394,7 +394,7 @@ function renderForm(){
   $("#tasks").innerHTML = tk.length ? `<div class="tasks">${tk.map((t,i)=>`<div><b>${String(i+1).padStart(2,"0")}</b><span><strong>${esc(t[0])}</strong>${esc(t[1]||"")}</span></div>`).join("")}</div>` : "";
   $("#qs").innerHTML = qsOf(cur).map((q,i)=>`
     <label for="q${i}">${i+1}. ${esc(q)}</label>
-    <textarea id="q${i}" required></textarea>`).join("");
+    <textarea id="q${i}" placeholder="還沒做完也可以先寫進度，之後再回來更新"></textarea>`).join("");
   fillMine();
 }
 
@@ -415,7 +415,7 @@ function renderSubs(){
   $("#subs").innerHTML = [...subs].sort((a,b)=>order(a.name)-order(b.name)).map(s=>`
     <div class="sub">
       <div class="who">${esc(s.name)}<time>${esc((s.updated_at||"").slice(5,16).replace("T"," "))}</time></div>
-      ${qs.map((q,i)=>`<div class="q">${esc(q)}</div><div class="a">${esc(s.answers[i]||"")}</div>`).join("")}
+      ${qs.map((q,i)=>`<div class="q">${esc(q)}</div><div class="a">${esc(s.answers[i]||"（還沒填）")}</div>`).join("")}
     </div>`).join("");
 }
 
@@ -454,15 +454,15 @@ $("#form").onsubmit = async e=>{
   const name = $("#who").value;
   if (!name){ $("#msg").textContent="請先選擇你的名字"; $("#msg").className="msg err"; return; }
   const answers = qsOf(cur).map((_,i)=>$("#q"+i).value.trim());
-  if (answers.some(a=>!a)){ $("#msg").textContent="每一題都要填喔"; $("#msg").className="msg err"; return; }
+  if (!answers.some(a=>a)){ $("#msg").textContent="至少填一題再送出喔"; $("#msg").className="msg err"; return; }
   const code = $("#code").value.trim();
   $("#send").disabled = true;
   try{
     await api("POST","/api/submissions",{week:cur+1,name,answers,code});
     store.set("lu_code",code);
-    $("#msg").textContent = "✅ 已送出！大家都看得到你的作業囉"; $("#msg").className="msg ok";
+    $("#msg").textContent = "✅ 已送出！之後做完可以隨時回來更新"; $("#msg").className="msg ok";
     await loadSubs(); loadGrid();
-    $("#msg").textContent = "✅ 已送出！大家都看得到你的作業囉"; $("#msg").className="msg ok";
+    $("#msg").textContent = "✅ 已送出！之後做完可以隨時回來更新"; $("#msg").className="msg ok";
   }catch(err){ $("#msg").textContent = "❌ "+err.message; $("#msg").className="msg err"; }
   $("#send").disabled = false;
 };
