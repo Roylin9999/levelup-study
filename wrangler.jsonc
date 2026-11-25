@@ -2,6 +2,8 @@
   "name": "levelup-study",
   "main": "_worker.js",
   "compatibility_date": "2025-09-01",
+  "workers_dev": true,
+  "routes": [ { "pattern": "levelup.wellstoryhall.com", "custom_domain": true } ],
   "assets": { "directory": ".", "binding": "ASSETS" },
   "d1_databases": [
     { "binding": "DB", "database_name": "levelup-db", "database_id": "60407a33-15e4-48e8-ba57-dca75d5c8765" }
