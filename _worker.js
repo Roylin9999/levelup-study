@@ -8,11 +8,15 @@ const json = (data, status = 200) =>
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });
 
-let ready = false;
-async function init(db) {
-  if (ready) return;
+// ======== 可編輯設定：群組（網址 /api/<群組>/...；"" = 原本的 12 人群組）========
+const GROUPS = { "": "", coring: "_coring" };
+// ===================================================================================
+
+const ready = {};
+async function init(db, sfx) {
+  if (ready[sfx]) return;
   await db.prepare(
-    `CREATE TABLE IF NOT EXISTS submissions (
+    `CREATE TABLE IF NOT EXISTS submissions${sfx} (
        week INTEGER NOT NULL,
        name TEXT NOT NULL,
        answers TEXT NOT NULL,
@@ -21,7 +25,7 @@ async function init(db) {
      )`
   ).run();
   await db.prepare(
-    `CREATE TABLE IF NOT EXISTS namelists (
+    `CREATE TABLE IF NOT EXISTS namelists${sfx} (
        name TEXT PRIMARY KEY,
        pin_hash TEXT NOT NULL,
        items TEXT NOT NULL,
@@ -29,7 +33,7 @@ async function init(db) {
        updated_at TEXT NOT NULL
      )`
   ).run();
-  ready = true;
+  ready[sfx] = true;
 }
 
 async function hashPin(name, pin) {
@@ -42,7 +46,13 @@ export default {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     if (!env.DB) return json({ error: "尚未綁定 D1 資料庫（變數名稱 DB）" }, 500);
-    await init(env.DB);
+    // /api/coring/xxx → 群組 coring，路徑改寫成 /api/xxx
+    let grp = "";
+    const m = url.pathname.match(/^\/api\/([a-z0-9-]+)(\/.*)$/);
+    if (m && m[1] in GROUPS && m[1] !== "") { grp = m[1]; url.pathname = "/api" + m[2]; }
+    const sfx = GROUPS[grp];
+    const T_SUB = "submissions" + sfx, T_LIST = "namelists" + sfx;
+    await init(env.DB, sfx);
     const needCode = !!env.TEAM_CODE;
 
     // 某週所有人的作業
@@ -50,7 +60,7 @@ export default {
       const week = parseInt(url.searchParams.get("week"), 10);
       if (!(week >= 1 && week <= 11)) return json({ error: "週次錯誤" }, 400);
       const { results } = await env.DB.prepare(
-        "SELECT name, answers, updated_at FROM submissions WHERE week = ? ORDER BY updated_at"
+        `SELECT name, answers, updated_at FROM ${T_SUB} WHERE week = ? ORDER BY updated_at`
       ).bind(week).all();
       return json({
         needCode,
@@ -71,7 +81,7 @@ export default {
       if (!answers.length || answers.some(a => !a.trim())) return json({ error: "每一題都要填喔" }, 400);
       const now = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 19); // 台灣時間
       await env.DB.prepare(
-        `INSERT INTO submissions (week, name, answers, updated_at) VALUES (?, ?, ?, ?)
+        `INSERT INTO ${T_SUB} (week, name, answers, updated_at) VALUES (?, ?, ?, ?)
          ON CONFLICT(week, name) DO UPDATE SET answers = excluded.answers, updated_at = excluded.updated_at`
       ).bind(week, name, JSON.stringify(answers), now).run();
       return json({ ok: true });
@@ -79,7 +89,7 @@ export default {
 
     // 30 名單：大家只看得到數量
     if (url.pathname === "/api/list/counts") {
-      const { results } = await env.DB.prepare("SELECT name, count FROM namelists").all();
+      const { results } = await env.DB.prepare(`SELECT name, count FROM ${T_LIST}`).all();
       return json({ items: results });
     }
 
@@ -92,7 +102,7 @@ export default {
       if (!name || name.length > 20) return json({ error: "請選擇名字" }, 400);
       if (!/^\d{4,8}$/.test(pin)) return json({ error: "密碼請輸入 4–8 位數字" }, 400);
       const h = await hashPin(name, pin);
-      const row = await env.DB.prepare("SELECT pin_hash, items FROM namelists WHERE name = ?").bind(name).first();
+      const row = await env.DB.prepare(`SELECT pin_hash, items FROM ${T_LIST} WHERE name = ?`).bind(name).first();
       if (row && row.pin_hash !== h) return json({ error: "密碼不正確（忘記密碼請找忠嶢重設）" }, 403);
 
       if (url.pathname === "/api/list/get") return json({ items: row ? JSON.parse(row.items) : [] });
@@ -102,7 +112,7 @@ export default {
       const count = items.filter(x => x[0].trim()).length;
       const now = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 19);
       await env.DB.prepare(
-        `INSERT INTO namelists (name, pin_hash, items, count, updated_at) VALUES (?, ?, ?, ?, ?)
+        `INSERT INTO ${T_LIST} (name, pin_hash, items, count, updated_at) VALUES (?, ?, ?, ?, ?)
          ON CONFLICT(name) DO UPDATE SET items = excluded.items, count = excluded.count, updated_at = excluded.updated_at`
       ).bind(name, h, JSON.stringify(items), count, now).run();
       return json({ ok: true, count });
@@ -110,7 +120,7 @@ export default {
 
     // 繳交進度表
     if (url.pathname === "/api/progress") {
-      const { results } = await env.DB.prepare("SELECT week, name FROM submissions").all();
+      const { results } = await env.DB.prepare(`SELECT week, name FROM ${T_SUB}`).all();
       return json({ items: results });
     }
 

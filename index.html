@@ -232,6 +232,9 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:30px}
 <script>
 /* ==================== 可編輯設定（每週更新改這裡） ==================== */
 
+// 群組代號（"" = 原本的群組；其他群組要和 _worker.js 的 GROUPS 對應）
+const GROUP = "";
+
 // 夥伴名單（下拉選單的順序）
 const MEMBERS = ["忠嶢","晨洸","子筠","Ella","冠文","敏君","玲君","國禎","春惠","妘庭","心茲","提姆"];
 
@@ -392,6 +395,7 @@ let DEMO = null;
 const DEMO_LIST = {};
 const demoData = [];
 async function api(method,url,body){
+  if (GROUP) url = url.replace("/api/", `/api/${GROUP}/`);
   if (!DEMO){
     try{
       const r = await fetch(url, method==="POST"?{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}:{});

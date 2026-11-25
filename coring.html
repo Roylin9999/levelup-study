@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LEVEL UP Coring 學習站</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#040a22; --card:rgba(10,22,60,.82); --line:rgba(232,192,110,.35); --text:#f3f6ff; --muted:#9fb0d6;
+  --gold:#e8b84a; --gold2:#fff1c2; --blue:#3d7bff; --ok:#4cd47a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Noto Sans TC",system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%,#fff8,transparent 60%),radial-gradient(1px 1px at 68% 9%,#fff9,transparent 60%),
+    radial-gradient(1.5px 1.5px at 85% 42%,#ffe7a8aa,transparent 60%),radial-gradient(1px 1px at 30% 64%,#fff7,transparent 60%),
+    radial-gradient(1px 1px at 52% 88%,#fff6,transparent 60%),radial-gradient(1.5px 1.5px at 8% 82%,#ffe7a899,transparent 60%),
+    radial-gradient(ellipse at 50% -10%,rgba(232,184,74,.22),transparent 50%),
+    radial-gradient(ellipse at 100% 60%,rgba(61,123,255,.28),transparent 55%),
+    linear-gradient(180deg,#071338,#040a22 60%);
+  background-attachment:fixed}
+.gold{background:linear-gradient(180deg,#fff6d6,#f1c86a 45%,#b8862b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+header{text-align:center;padding:22px 0 8px}
+header .en{font-size:.85rem;letter-spacing:.12em;color:var(--gold2);font-weight:700}
+header h1{font-size:2.4rem;font-weight:900;letter-spacing:.04em;line-height:1.3}
+header h1 .lv{font-style:italic;background:linear-gradient(180deg,#bfe0ff,#3d7bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .tagline{font-size:1.25rem;font-weight:900;margin-top:2px}
+header p{color:var(--muted);font-size:.92rem;margin-top:6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px;
+  box-shadow:0 0 0 1px rgba(255,255,255,.03) inset,0 10px 30px rgba(0,0,0,.35);backdrop-filter:blur(4px)}
+h2{font-size:1.15rem;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--gold2)}
+h2 .tag{font-size:.75rem;background:linear-gradient(135deg,var(--gold),#f7d98a);color:#1a1205;border-radius:999px;padding:1px 10px;font-weight:700}
+
+/* 課程總覽 */
+details{border-top:1px solid rgba(232,192,110,.18);padding:10px 0}
+details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between}
+summary::after{content:"＋";color:var(--gold)} details[open] summary::after{content:"－"}
+.flow{display:grid;gap:8px;margin-top:10px}
+.flow div{display:flex;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:rgba(4,10,34,.6)}
+.flow em{font-style:normal;color:var(--gold);font-weight:700;white-space:nowrap}
+.big{font-size:1.35rem;font-weight:900;text-align:center;margin:8px 0}
+.big b{color:#ff8a3d}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 12px;margin:4px 4px 0 0;font-size:.9rem}
+.steps{counter-reset:s;display:grid;gap:6px;margin-top:8px}
+.steps span{counter-increment:s;padding-left:30px;position:relative}
+.steps span::before{content:counter(s);position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:50%;
+  background:var(--gold);color:#1a1205;font-size:.8rem;font-weight:900;text-align:center;line-height:22px}
+.earn{width:100%;font-size:.9rem;margin-top:8px}
+.earn td{padding:3px 4px;border-bottom:1px solid rgba(232,192,110,.15);text-align:right}
+.earn td:first-child{text-align:left;font-weight:700;color:var(--gold2)}
+.note{color:var(--muted);font-size:.8rem;margin-top:6px}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;margin-top:8px;font-size:.9rem}
+.people div{border-left:3px solid var(--gold);padding:2px 8px;background:rgba(4,10,34,.5);border-radius:0 8px 8px 0}
+.people small{display:block;color:var(--muted)}
+.speakers{margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px}
+.speakers span{background:rgba(61,123,255,.18);border:1px solid rgba(61,123,255,.5);border-radius:10px;padding:3px 10px;font-size:.88rem}
+
+/* 週次選擇 */
+.weeks{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.wk{flex:0 0 auto;border:1px solid var(--line);background:#15120f;color:var(--text);border-radius:12px;
+  padding:6px 12px;cursor:pointer;text-align:center;font-family:inherit;min-width:64px}
+.wk b{display:block;font-size:.95rem}
+.wk small{color:var(--muted);font-size:.75rem}
+.wk.on{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1205;border-color:transparent}
+.wk.on small{color:#4a3510}
+.wk.future{opacity:.45}
+
+/* 重點 */
+.keypoints ol{padding-left:1.4em}
+.keypoints li{margin:6px 0}
+.empty{color:var(--muted);font-size:.95rem}
+
+/* 表單 */
+label{display:block;font-weight:700;margin:12px 0 6px;font-size:.95rem}
+select,textarea,input{width:100%;font-family:inherit;font-size:1rem;color:var(--text);background:#120f0c;
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:90px;resize:vertical}
+select:focus,textarea:focus,input:focus{outline:2px solid var(--gold);border-color:transparent}
+.btn{margin-top:14px;width:100%;border:0;border-radius:12px;padding:12px;font-size:1.05rem;font-weight:700;
+  font-family:inherit;cursor:pointer;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1205}
+.btn:disabled{opacity:.5;cursor:wait}
+.msg{margin-top:10px;font-size:.92rem;min-height:1.2em}
+.msg.ok{color:var(--ok)} .msg.err{color:#ff7a6b}
+
+/* 大家的作業 */
+.subs{display:grid;gap:12px}
+.sub{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#15120f}
+.sub .who{font-weight:700;color:var(--gold2);display:flex;justify-content:space-between;gap:8px}
+.sub .who time{color:var(--muted);font-weight:400;font-size:.8rem}
+.sub .q{color:var(--muted);font-size:.82rem;margin-top:6px}
+.sub .a{white-space:pre-wrap;word-break:break-word}
+
+/* 進度表 */
+.grid{overflow-x:auto}
+table{border-collapse:collapse;font-size:.85rem;width:100%}
+th,td{padding:5px 4px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card)}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;background:#2a241e}
+.dot.y{background:var(--ok)}
+.count{color:var(--gold2);font-weight:700}
+.lrow{display:grid;grid-template-columns:34px minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center;margin-top:6px}
+.lrow span{color:var(--muted);font-size:.85rem;text-align:right}
+.lrow input{padding:8px 10px}
+.bar{display:grid;grid-template-columns:64px minmax(0,1fr) 52px;gap:8px;align-items:center;margin:6px 0;font-size:.9rem}
+.bar i{display:block;height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar i b{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ffe08a)}
+.bar em{font-style:normal;text-align:right;color:var(--gold2);font-weight:700}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="demo" hidden style="background:rgba(61,123,255,.2);border:1px solid var(--blue);border-radius:10px;padding:6px 12px;font-size:.85rem;text-align:center">👀 預覽模式：還沒接上資料庫，交的作業只會留在這個畫面</div>
+  <header>
+    <div class="en">ASIA RISES: LEVEL UP TOGETHER</div>
+    <h1><span class="gold">全亞洲啟動・一起</span> <span class="lv">LEVEL UP</span></h1>
+    <div class="tagline"><span class="gold">打造百萬美金認知培訓｜Coring 學習站</span></div>
+    <p>每週三 21:00 Zoom｜上完課一起交作業、一起晉升 💪</p>
+  </header>
+
+  <div class="card">
+    <h2>🌏 課程總覽</h2>
+    <details open>
+      <summary>🎯 這三個月的目標</summary>
+      <div class="big">每人親推 <b>2</b> 人，並完成 <b>1000BV</b> » 1000BV</div>
+      <div>✅ 你要立即準備：<span class="pill">1 張大會門票</span><span class="pill">30 個名單</span></div>
+    </details>
+    <details>
+      <summary>⏱ 每堂課流程</summary>
+      <div class="flow">
+        <div>主持人開場<em></em></div>
+        <div>成功經驗分享（3 人）<em>每人 8 分鐘</em></div>
+        <div>各國本週晉升表揚（或分享）<em></em></div>
+        <div>重量級嘉賓成功之路分享<em>10 分鐘</em></div>
+        <div>執行教練總結・向成功邁進<em>5 分鐘</em></div>
+      </div>
+    </details>
+    <details>
+      <summary>🔥 驚人的溢出效應・迎向翻身契機</summary>
+      <div class="steps">
+        <span>驚人的溢出效應</span><span>延燒一年的動力</span><span>建立新領導班班底的機會</span>
+        <span>可能加碼的收益</span><span>全員翻身的墊腳石</span>
+      </div>
+    </details>
+    <details>
+      <summary>📈 倍增收益與晉升計畫</summary>
+      <table class="earn" id="earn"></table>
+      <p class="note">現金收益為大會簡報的預估數字，總計 $1,028,500。</p>
+    </details>
+    <details>
+      <summary>🎟 2027 大會</summary>
+      <div class="people">
+        <div>2027 美安台灣全國年會<small>2027/5/7–5/9｜台北南港展覽館 1 館</small></div>
+        <div>SEACON 2027 東南亞年會<small>2027/5/21–5/23</small></div>
+        <div>Annual Convention 2027<small>2027/5/14–5/16</small></div>
+      </div>
+    </details>
+    <details>
+      <summary>👑 史詩級顧問團</summary>
+      <div class="people" id="advisors"></div>
+    </details>
+    <details>
+      <summary>🏅 史詩級教練團</summary>
+      <div class="people" id="coaches"></div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>📅 選擇週次</h2>
+    <div class="weeks" id="weeks"></div>
+  </div>
+
+  <div class="card keypoints">
+    <h2 id="kpTitle">📌 重點整理</h2>
+    <div id="kp"></div>
+  </div>
+
+  <div class="card" id="listCard" hidden>
+    <h2>📝 我的 30 個名單 <span class="tag" id="listTag">0 / 30</span></h2>
+    <p class="note" style="margin:0 0 6px">名單內容只有自己看得到（用個人密碼保護），大家只看得到你寫了幾個。</p>
+    <div class="row2">
+      <div><label for="lwho">我是誰</label><select id="lwho"></select></div>
+      <div><label for="lpin">個人密碼（4–8 位數字）</label><input id="lpin" type="password" inputmode="numeric" autocomplete="off" placeholder="第一次儲存＝設定密碼"></div>
+    </div>
+    <button class="btn" id="lopen" type="button">打開我的名單</button>
+    <div class="msg" id="lmsg"></div>
+    <div id="lbox" hidden>
+      <div class="lrow" style="margin-top:12px"><span></span><b style="font-size:.85rem">姓名</b><b style="font-size:.85rem">關係／備註</b></div>
+      <div id="lrows"></div>
+      <button class="btn" id="lsave" type="button">儲存名單</button>
+      <div class="msg" id="lmsg2"></div>
+    </div>
+  </div>
+
+  <div class="card" id="progCard" hidden>
+    <h2>🏁 30 名單進度</h2>
+    <div id="bars"></div>
+  </div>
+
+  <div class="card" id="hwCard">
+    <h2>✍️ 小作業 <span class="tag" id="hwTag"></span></h2>
+    <form id="form">
+      <label for="who">我是誰</label>
+      <select id="who" required></select>
+      <div id="qs"></div>
+      <div id="codeBox" hidden>
+        <label for="code">團隊通關碼</label>
+        <input id="code" type="password" autocomplete="off" placeholder="群組公告的通關碼">
+      </div>
+      <button class="btn" id="send" type="submit">交作業</button>
+      <div class="msg" id="msg"></div>
+    </form>
+  </div>
+
+  <div class="card" id="subsCard">
+    <h2>👀 大家的作業 <span class="tag" id="subCount">0</span></h2>
+    <div class="subs" id="subs"><p class="empty">載入中…</p></div>
+  </div>
+
+  <div class="card">
+    <h2>🏆 繳交進度</h2>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <footer>LEVEL UP Coring・一起上課、一起 Level Up</footer>
+</div>
+
+<script>
+/* ==================== 可編輯設定（每週更新改這裡） ==================== */
+
+// 群組代號（"" = 原本的群組；其他群組要和 _worker.js 的 GROUPS 對應）
+const GROUP = "coring";
+
+// 夥伴名單（下拉選單的順序）
+const MEMBERS = ["可威","劭旻","Bianca","佩🐷","惠英","Lesley","nono","Dwi（印尼夥伴）","迦迦","圓圓","姜姜","Candice","Ygrek","Patty","Annie","Jasmine","Jia Sheng","Valerie","Peter","阿威","寶石","詠純","Jimmy","瑋瑋","魚魚","蕭蕭","君曄","小美"];
+
+// 每週都有的固定作業題目（某週要換題目，可在該週的 questions 覆寫）
+const DEFAULT_QUESTIONS = [
+  "這堂課我最有收穫的 1 個重點是什麼？",
+  "這一週我要做的 1 個行動是什麼？"
+];
+
+// 11 週課程內容：上完課後把 title / points 填進去即可
+// points 留空陣列 [] 時，網頁會顯示「上課後更新」
+// label：週次名稱；speakers：主講嘉賓；questions：（選填）這週專屬作業題目；noHomework:true＝這週沒有作業；namelist:true＝這週填 30 個名單
+const WEEKS = [
+  { date:"2026-11-25", label:"準備週", title:"", points:[],
+    speakers:["Marc Ashley｜美安全球集團總裁兼首席運營官","Steve Bosson｜首席發展官","Evelyn Chan｜區域總經理（美安亞洲、台灣及香港）","Celine Leung｜區域業務總監（美安亞洲、台灣及香港）"],
+    noHomework:true, namelist:true },
+  { date:"2026-12-02", label:"第一週", title:"", points:[], speakers:["蔡昌志 & 林孟涵｜執行副總裁級 EFVP"] },
+  { date:"2026-12-09", label:"第二週", title:"", points:[], speakers:["Katherine Yin｜副總裁級 FVP"] },
+  { date:"2026-12-16", label:"第三週", title:"", points:[], speakers:["Steven Hu｜高級顧問經理級 DIR","Martin Hui｜總顧問經理級 NSC"] },
+  { date:"2026-12-23", label:"第四週", title:"", points:[], speakers:["李竣豪 & 林瑞婷｜執行顧問經理級 ESC"] },
+  { date:"2026-12-30", label:"第五週", title:"", points:[], speakers:["Ng Ai Ping｜總顧問經理級 NSC"] },
+  { date:"2027-01-06", label:"第六週", title:"", points:[], speakers:["吳柏樺｜總顧問經理級 NSC"] },
+  { date:"2027-01-13", label:"第七週", title:"", points:[], speakers:["丁沛然｜高級顧問經理級 DIR"] },
+  { date:"2027-01-20", label:"第八週", title:"", points:[], speakers:["Kevin Ng｜顧問經理級 SC"] },
+  { date:"2027-01-27", label:"第九週", title:"", points:[], speakers:["柳元涵｜執行高級顧問經理級 ESC"] },
+  { date:"2027-02-03", label:"成功慶賀", title:"🎓", points:[], speakers:["Loren Ridinger｜共同創辦人兼首席執行官","Marc Ashley｜美安全球集團總裁兼首席運營官"] }
+];
+
+const EARNINGS = [["助理經理","$300","$9,500"],["EC","$600","$19,000"],["SEC","$750","$24,000"],["MC","$1,500","$48,000"],
+  ["SMC","$1,500","$48,000"],["PC","$2,500","$80,000"],["SC","$5,000","$160,000"],["NSC","$5,000","$160,000"],
+  ["ESC","$5,000","$160,000"],["D","$10,000","$320,000"]];
+const ADVISORS = [["Marc Ashley","美安全球集團總裁兼首席運營官"],["Steve Bosson","首席發展官"],["Evelyn Chan","區域總經理－美安亞洲、台灣及香港"],
+  ["Celine Leung","區域業務總監－美安亞洲、台灣及香港"],["Joanne Hsi","國際主席級"],["James Kuo","國際總裁級"],
+  ["Johnny Huang","執行副總裁級"],["蔡昌志 & 林孟涵","執行副總裁級"],["Sofia Ma","執行高級顧問經理級"]];
+const COACHES = [["蔡昌志 & 林孟涵","執行副總裁級"],["Katherine Yin","副總裁級"],["柳元涵","執行高級顧問經理級"],["Steven Hu","高級顧問經理級"],
+  ["丁沛然","高級顧問經理級"],["李竣豪 & 林瑞婷","執行顧問經理級"],["吳柏樺","總顧問經理級"],["Ng Ai Ping","總顧問經理級"],
+  ["Martin Hui","總顧問經理級"],["Kevin Ng","顧問經理級"],["Maryza Surya","經理級"]];
+
+/* ==================== 以下不用改 ==================== */
+
+const $ = s => document.querySelector(s);
+const store = {
+  get(k){ try{return localStorage.getItem(k)}catch(e){return null} },
+  set(k,v){ try{localStorage.setItem(k,v)}catch(e){} }
+};
+const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const md = d => { const [,m,dd] = d.split("-"); return `${+m}/${+dd}`; };
+const todayTPE = new Date(Date.now()+8*3600e3).toISOString().slice(0,10);
+
+let cur = 0, subs = [], needCode = false;
+// 預設選「最近一堂已上過（或今天）的課」
+WEEKS.forEach((w,i)=>{ if (w.date <= todayTPE) cur = i; });
+
+function qsOf(i){ return WEEKS[i].questions || DEFAULT_QUESTIONS; }
+
+function renderWeeks(){
+  $("#weeks").innerHTML = WEEKS.map((w,i)=>`
+    <button class="wk ${i===cur?"on":""} ${w.date>todayTPE?"future":""}" data-i="${i}">
+      <b>${esc(w.label)}</b><small>${md(w.date)}</small>
+    </button>`).join("");
+  $("#weeks").querySelectorAll(".wk").forEach(b=>b.onclick=()=>{ cur=+b.dataset.i; refresh(); });
+  const on = $("#weeks .on"); if (on) on.scrollIntoView({inline:"center",block:"nearest"});
+}
+
+function renderKP(){
+  const w = WEEKS[cur];
+  $("#kpTitle").textContent = `📌 ${w.label}重點整理${w.title?"｜"+w.title:""}`;
+  const sp = (w.speakers||[]).length ? `<div class="speakers">${w.speakers.map(x=>`<span>${esc(x)}</span>`).join("")}</div>` : "";
+  $("#kp").innerHTML = sp + (w.points.length
+    ? `<ol>${w.points.map(p=>`<li>${esc(p)}</li>`).join("")}</ol>`
+    : `<p class="empty">${w.date>todayTPE?`${md(w.date)} 上課後更新 ⏳`:"重點整理準備中，上完課後更新 ✨"}</p>`);
+}
+
+function renderForm(){
+  const off = !!WEEKS[cur].noHomework, nl = !!WEEKS[cur].namelist;
+  $("#hwCard").hidden = off; $("#subsCard").hidden = off;
+  $("#listCard").hidden = !nl; $("#progCard").hidden = !nl;
+  if (nl) loadBars();
+  if (off) return;
+  $("#hwTag").textContent = `${WEEKS[cur].label}・${md(WEEKS[cur].date)}`;
+  $("#qs").innerHTML = qsOf(cur).map((q,i)=>`
+    <label for="q${i}">${i+1}. ${esc(q)}</label>
+    <textarea id="q${i}" required></textarea>`).join("");
+  fillMine();
+}
+
+function fillMine(){
+  if (WEEKS[cur].noHomework) return;
+  const name = $("#who").value;
+  const mine = subs.find(s=>s.name===name);
+  qsOf(cur).forEach((_,i)=>{ $("#q"+i).value = mine ? (mine.answers[i]||"") : ""; });
+  $("#send").textContent = mine ? "更新我的作業" : "交作業";
+  $("#msg").textContent = ""; $("#msg").className = "msg";
+}
+
+function renderSubs(){
+  $("#subCount").textContent = `${subs.length} / ${MEMBERS.length}`;
+  if (!subs.length){ $("#subs").innerHTML = `<p class="empty">還沒有人交，當第一個吧！🔥</p>`; return; }
+  const qs = qsOf(cur);
+  const order = n => { const i = MEMBERS.indexOf(n); return i<0?999:i; };
+  $("#subs").innerHTML = [...subs].sort((a,b)=>order(a.name)-order(b.name)).map(s=>`
+    <div class="sub">
+      <div class="who">${esc(s.name)}<time>${esc((s.updated_at||"").slice(5,16).replace("T"," "))}</time></div>
+      ${qs.map((q,i)=>`<div class="q">${esc(q)}</div><div class="a">${esc(s.answers[i]||"")}</div>`).join("")}
+    </div>`).join("");
+}
+
+async function loadSubs(){
+  if (WEEKS[cur].noHomework) return;
+  $("#subs").innerHTML = `<p class="empty">載入中…</p>`;
+  try{
+    const j = await api("GET",`/api/submissions?week=${cur+1}`);
+    needCode = !!j.needCode; $("#codeBox").hidden = !needCode;
+    subs = j.items || [];
+  }catch(e){ subs = []; $("#subs").innerHTML = `<p class="empty">讀取失敗，請重新整理</p>`; return; }
+  renderSubs(); fillMine();
+}
+
+async function loadGrid(){
+  let done = [];
+  try{ done = (await api("GET","/api/progress")).items || []; }catch(e){}
+  const has = new Set(done.map(d=>d.week+"|"+d.name));
+  const hw = WEEKS.map((w,i)=>({w,i})).filter(x=>!x.w.noHomework);
+  const head = `<tr><th>夥伴</th>${hw.map(({i})=>`<th>${i===WEEKS.length-1?"慶":i}</th>`).join("")}<th>合計</th></tr>`;
+  const rows = MEMBERS.map(n=>{
+    let c = 0;
+    const cells = hw.map(({i})=>{ const y = has.has((i+1)+"|"+n); if(y)c++; return `<td><span class="dot ${y?"y":""}"></span></td>`; }).join("");
+    return `<tr><td>${esc(n)}</td>${cells}<td class="count">${c}</td></tr>`;
+  }).join("");
+  $("#grid").innerHTML = `<table>${head}${rows}</table>`;
+}
+
+$("#who").innerHTML = `<option value="">— 請選擇你的名字 —</option>` + MEMBERS.map(n=>`<option>${esc(n)}</option>`).join("");
+$("#who").value = store.get("lu_name") || "";
+$("#who").onchange = ()=>{ store.set("lu_name",$("#who").value); fillMine(); };
+$("#code").value = store.get("lu_code") || "";
+
+$("#form").onsubmit = async e=>{
+  e.preventDefault();
+  const name = $("#who").value;
+  if (!name){ $("#msg").textContent="請先選擇你的名字"; $("#msg").className="msg err"; return; }
+  const answers = qsOf(cur).map((_,i)=>$("#q"+i).value.trim());
+  if (answers.some(a=>!a)){ $("#msg").textContent="每一題都要填喔"; $("#msg").className="msg err"; return; }
+  const code = $("#code").value.trim();
+  $("#send").disabled = true;
+  try{
+    await api("POST","/api/submissions",{week:cur+1,name,answers,code});
+    store.set("lu_code",code);
+    $("#msg").textContent = "✅ 已送出！大家都看得到你的作業囉"; $("#msg").className="msg ok";
+    await loadSubs(); loadGrid();
+    $("#msg").textContent = "✅ 已送出！大家都看得到你的作業囉"; $("#msg").className="msg ok";
+  }catch(err){ $("#msg").textContent = "❌ "+err.message; $("#msg").className="msg err"; }
+  $("#send").disabled = false;
+};
+
+/* ---- API（後端沒接上時自動進入「預覽模式」，資料只存在這個畫面） ---- */
+let DEMO = null;
+const DEMO_LIST = {};
+const demoData = [];
+async function api(method,url,body){
+  if (GROUP) url = url.replace("/api/", `/api/${GROUP}/`);
+  if (!DEMO){
+    try{
+      const r = await fetch(url, method==="POST"?{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}:{});
+      const ct = r.headers.get("content-type")||"";
+      if (ct.includes("application/json")){
+        const j = await r.json();
+        if (!r.ok) throw Object.assign(new Error(j.error||"送出失敗"),{server:true});
+        return j;
+      }
+    }catch(e){ if (e.server) throw e; }
+    DEMO = demoData.slice(); $("#demo").hidden = false;
+  }
+  if (method==="POST" && url==="/api/submissions"){
+    DEMO = DEMO.filter(s=>!(s.week===body.week&&s.name===body.name));
+    DEMO.push({week:body.week,name:body.name,answers:body.answers,updated_at:new Date(Date.now()+8*3600e3).toISOString().slice(0,16)});
+    return {ok:true};
+  }
+  if (url==="/api/list/counts") return {items:Object.entries(DEMO_LIST).map(([name,v])=>({name,count:v.items.filter(x=>x[0]).length}))};
+  if (url==="/api/list/get"){ const v=DEMO_LIST[body.name]; if(v&&v.pin!==body.pin) throw Object.assign(new Error("密碼不正確"),{server:true}); return {items:v?v.items:[]}; }
+  if (url==="/api/list/save"){ const v=DEMO_LIST[body.name]; if(v&&v.pin!==body.pin) throw Object.assign(new Error("密碼不正確"),{server:true}); DEMO_LIST[body.name]={pin:body.pin,items:body.items}; return {ok:true}; }
+  if (url.startsWith("/api/progress")) return {items:DEMO.map(s=>({week:s.week,name:s.name}))};
+  const wk = +new URL(url,location.href).searchParams.get("week");
+  return {needCode:false,items:DEMO.filter(s=>s.week===wk)};
+}
+
+$("#earn").innerHTML = EARNINGS.map(e=>`<tr><td>${e[0]}</td><td>${e[1]}</td><td>→</td><td>${e[2]}</td></tr>`).join("");
+const ppl = a => a.map(p=>`<div>${esc(p[0])}<small>${esc(p[1])}</small></div>`).join("");
+$("#advisors").innerHTML = ppl(ADVISORS); $("#coaches").innerHTML = ppl(COACHES);
+
+/* ---- 30 名單 ---- */
+const LIST_N = 30;
+function drawRows(items){
+  $("#lrows").innerHTML = Array.from({length:LIST_N},(_,i)=>`
+    <div class="lrow"><span>${i+1}</span>
+      <input data-k="0" data-i="${i}" maxlength="20" value="${esc((items[i]||[])[0]||"")}">
+      <input data-k="1" data-i="${i}" maxlength="40" value="${esc((items[i]||[])[1]||"")}"></div>`).join("");
+  $("#lrows").oninput = countList; countList();
+}
+function readRows(){
+  const out = Array.from({length:LIST_N},()=>["",""]);
+  $("#lrows").querySelectorAll("input").forEach(el=>{ out[+el.dataset.i][+el.dataset.k] = el.value.trim(); });
+  return out;
+}
+function countList(){ const c = readRows().filter(x=>x[0]).length; $("#listTag").textContent = `${c} / ${LIST_N}`; }
+function lcred(msgEl){
+  const name = $("#lwho").value, pin = $("#lpin").value.trim();
+  if (!name){ msgEl.textContent="請先選擇你的名字"; msgEl.className="msg err"; return null; }
+  if (!/^\d{4,8}$/.test(pin)){ msgEl.textContent="密碼請輸入 4–8 位數字"; msgEl.className="msg err"; return null; }
+  return {name,pin};
+}
+$("#lwho").innerHTML = $("#who").innerHTML; $("#lwho").value = store.get("lu_name") || "";
+$("#lwho").onchange = ()=>{ store.set("lu_name",$("#lwho").value); $("#lbox").hidden = true; $("#lmsg").textContent=""; };
+$("#lopen").onclick = async ()=>{
+  const c = lcred($("#lmsg")); if (!c) return;
+  try{
+    const j = await api("POST","/api/list/get",c);
+    drawRows(j.items||[]); $("#lbox").hidden = false;
+    $("#lmsg").textContent = (j.items||[]).length ? "✅ 已打開你的名單" : "第一次使用：填好後按儲存，這組密碼就是你的個人密碼";
+    $("#lmsg").className = "msg ok";
+  }catch(e){ $("#lmsg").textContent = "❌ "+e.message; $("#lmsg").className="msg err"; }
+};
+$("#lsave").onclick = async ()=>{
+  const c = lcred($("#lmsg2")); if (!c) return;
+  $("#lsave").disabled = true;
+  try{
+    await api("POST","/api/list/save",{...c,items:readRows()});
+    $("#lmsg2").textContent = "✅ 已儲存！"; $("#lmsg2").className="msg ok"; loadBars();
+  }catch(e){ $("#lmsg2").textContent = "❌ "+e.message; $("#lmsg2").className="msg err"; }
+  $("#lsave").disabled = false;
+};
+async function loadBars(){
+  let items = [];
+  try{ items = (await api("GET","/api/list/counts")).items || []; }catch(e){}
+  const m = Object.fromEntries(items.map(x=>[x.name,x.count]));
+  $("#bars").innerHTML = MEMBERS.map(n=>{ const c = Math.min(m[n]||0,LIST_N);
+    return `<div class="bar"><span>${esc(n)}</span><i><b style="width:${c/LIST_N*100}%"></b></i><em>${c}/${LIST_N}${c>=LIST_N?" 🎉":""}</em></div>`; }).join("");
+}
+
+function refresh(){ renderWeeks(); renderKP(); renderForm(); loadSubs(); }
+refresh(); loadGrid();
+</script>
+</body>
+</html>
