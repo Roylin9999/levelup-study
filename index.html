@@ -299,11 +299,9 @@ const GROUP = "";
 // 夥伴名單（下拉選單的順序）
 const MEMBERS = ["忠嶢","晨洸","子筠","Ella","冠文","敏君","玲君","國禎","春惠","妘庭","心茲","提姆"];
 
-// 每週都有的固定作業題目（某週要換題目，可在該週的 questions 覆寫）
-const DEFAULT_QUESTIONS = [
-  "這堂課我最有收穫的 1 個重點是什麼？",
-  "這一週我要做的 1 個行動是什麼？"
-];
+// 每週作業由教練當週布達：上完課後在該週填 tasks（作業說明）和 questions（交作業題目）
+// 還沒填 questions 的週次，網頁會顯示「作業當週布達後更新」
+const DEFAULT_QUESTIONS = [];
 
 // 11 週課程內容：上完課後把 title / points 填進去即可
 // points 留空陣列 [] 時，網頁會顯示「上課後更新」
@@ -373,12 +371,15 @@ function renderKP(){
 
 function renderForm(){
   const off = !!WEEKS[cur].noHomework, nl = !!WEEKS[cur].namelist;
-  $("#hwCard").hidden = off; $("#subsCard").hidden = off;
+  const pending = !off && !qsOf(cur).length;
+  $("#hwCard").hidden = off; $("#subsCard").hidden = off || pending;
+  $("#form").hidden = pending;
   $("#listCard").hidden = !nl; $("#progCard").hidden = !nl;
   if (nl) loadBars();
   if (off) return;
   $("#hwTag").textContent = `${WEEKS[cur].label}・${md(WEEKS[cur].date)}`;
   const tk = WEEKS[cur].tasks || [];
+  if (pending){ $("#tasks").innerHTML = `<p class="empty">📢 本週作業由教練在 ${md(WEEKS[cur].date)} 課程中布達，上完課後更新</p>`; $("#qs").innerHTML = ""; return; }
   $("#tasks").innerHTML = tk.length ? `<div class="tasks">${tk.map((t,i)=>`<div><b>${String(i+1).padStart(2,"0")}</b><span><strong>${esc(t[0])}</strong>${esc(t[1]||"")}</span></div>`).join("")}</div>` : "";
   $("#qs").innerHTML = qsOf(cur).map((q,i)=>`
     <label for="q${i}">${i+1}. ${esc(q)}</label>
@@ -387,7 +388,7 @@ function renderForm(){
 }
 
 function fillMine(){
-  if (WEEKS[cur].noHomework) return;
+  if (WEEKS[cur].noHomework || !qsOf(cur).length) return;
   const name = $("#who").value;
   const mine = subs.find(s=>s.name===name);
   qsOf(cur).forEach((_,i)=>{ $("#q"+i).value = mine ? (mine.answers[i]||"") : ""; });
@@ -408,7 +409,7 @@ function renderSubs(){
 }
 
 async function loadSubs(){
-  if (WEEKS[cur].noHomework) return;
+  if (WEEKS[cur].noHomework || !qsOf(cur).length) return;
   $("#subs").innerHTML = `<p class="empty">載入中…</p>`;
   try{
     const j = await api("GET",`/api/submissions?week=${cur+1}`);
