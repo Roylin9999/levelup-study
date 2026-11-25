@@ -528,6 +528,13 @@ async function loadBars(){
     return `<div class="bar"><span>${esc(n)}</span><i><b style="width:${c/LIST_N*100}%"></b></i><em>${c}/${LIST_N}${c>=LIST_N?" 🎉":""}</em></div>`; }).join("");
 }
 
+
+/* 隱藏入口：連按三下標語進入 Leader 後台 */
+{ let n=0, t=0; const el=document.querySelector("header .tagline");
+  el.style.userSelect="none"; el.style.webkitUserSelect="none";
+  el.addEventListener("click",()=>{ const now=Date.now(); n = now-t<600 ? n+1 : 1; t=now;
+    if (n>=3){ n=0; location.href="/admin"; } }); }
+
 function refresh(){ renderWeeks(); renderKP(); renderForm(); loadSubs(); }
 refresh(); loadGrid();
 </script>
